@@ -1,0 +1,51 @@
+# .github/workflows/sync-upstream-with-workflow-inject.yml
+name: Sync upstream (master branch + inject workflow)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 23 * * 0-4' # 月-金 JST 08:00（UTC 23:00）
+
+env:
+  WORKFLOW_SRC_BRANCH: workflow
+
+jobs:
+  sync_upstream_and_inject_workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target branch (no credentials persisted)
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Add upstream & fetch
+        run: |
+          set -eux
+          git remote add upstream "https://github.com/redmine/redmine.git" || true
+          git fetch --prune upstream
+
+      - name: Hard reset target branch to upstream
+        run: |
+          set -eux
+          git checkout master
+          git reset --hard upstream/master
+
+      - name: Inject workflows from dedicated branch
+        run: |
+          set -eux
+          git fetch origin "${WORKFLOW_SRC_BRANCH}:refs/remotes/origin/${WORKFLOW_SRC_BRANCH}"
+          git restore --source "origin/${WORKFLOW_SRC_BRANCH}" --staged --worktree -- .github/workflows/sync-upstream-with-workflow-inject.yml || true
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "CI: ワークフロー(.github/workflows/sync-upstream-with-workflow-inject.yml)を ${WORKFLOW_SRC_BRANCH} ブランチからコピーしてコミット"
+
+      - name: Push branch
+        env:
+          MIRROR_PAT: ${{ secrets.MIRROR_PAT }}  # Fine-grained: Contents RW + Workflows RW
+        run: |
+          set -eux
+          git remote set-url origin "https://${MIRROR_PAT}@github.com/${{ github.repository }}.git"
+          git push origin master --force-with-lease
