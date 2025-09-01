@@ -1,5 +1,5 @@
-# .github/workflows/mirror-upstream-branch-and-tags.yml
-name: Mirror upstream (branch + tags)
+# .github/workflows/mirror-upstream-branch.yml
+name: Mirror upstream (master branch only)
 
 on:
   workflow_dispatch:
@@ -26,7 +26,7 @@ jobs:
         run: |
           set -eux
           git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
-          git fetch --prune upstream --tags
+          git fetch --prune upstream
 
       - name: Hard reset target branch to upstream
         run: |
@@ -41,8 +41,3 @@ jobs:
           set -eux
           git remote set-url origin "https://${MIRROR_PAT}@github.com/${{ github.repository }}.git"
           git push origin "${TARGET_BRANCH}" --force-with-lease
-
-      - name: Push all upstream tags
-        run: |
-          set -eux
-          git push origin --tags --force
