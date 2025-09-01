@@ -8,14 +8,14 @@ class ApiKeyCopySystemTest < ApplicationSystemTestCase
       log_user('jsmith', 'jsmith')
 
       user = User.find_by_login('jsmith')
-      user.api_key if user.api_token.nil?
+      expected_value = user.api_key
 
       visit '/my/account'
       click_link 'Show'
 
       assert_selector '#api-access-key', visible: true
 
-      expected_value = find('#api-access-key').text.strip
+      assert_equal expected_value, find('#api-access-key').text.strip
 
       find('.copy-api-key-link').click
 
@@ -33,7 +33,7 @@ class ApiKeyCopySystemTest < ApplicationSystemTestCase
       log_user('jsmith', 'jsmith')
 
       user = User.find_by_login('jsmith')
-      user.api_key if user.api_token.nil?
+      user.api_key # Create an API key if user don't have one.
 
       visit '/my/account'
       click_link 'Show'
@@ -54,7 +54,7 @@ class ApiKeyCopySystemTest < ApplicationSystemTestCase
       log_user('jsmith', 'jsmith')
 
       user = User.find_by_login('jsmith')
-      user.api_key if user.api_token.nil?
+      user.api_key # Create an API key if user don't have one.
 
       visit '/my/account'
 
