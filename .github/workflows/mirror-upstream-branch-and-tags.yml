@@ -6,10 +6,6 @@ on:
   schedule:
     - cron: '0 23 * * 0-4' # 月-金 JST 08:00
 
-permissions:
-  contents: write
-  checks: write
-
 env:
   UPSTREAM_REPO: redmine/redmine
   UPSTREAM_BRANCH: master
@@ -37,9 +33,12 @@ jobs:
           git checkout "${TARGET_BRANCH}"
           git reset --hard "upstream/${UPSTREAM_BRANCH}"
 
-      - name: Force push branch
+      - name: Push (force-with-lease) with PAT
+        env:
+          MIRROR_PAT: ${{ secrets.MIRROR_PAT }}
         run: |
           set -eux
+          git remote set-url origin "https://${MIRROR_PAT}@github.com/${{ github.repository }}.git"
           git push origin "${TARGET_BRANCH}" --force-with-lease
 
       - name: Push all upstream tags
