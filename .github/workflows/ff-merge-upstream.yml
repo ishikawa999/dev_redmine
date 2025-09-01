@@ -1,0 +1,38 @@
+# .github/workflows/ff-merge-upstream.yml
+name: fastforward merge upstream
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 23 * * 0-4"   # 月〜金 JST 08:00
+
+jobs:
+  merge_upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Add upstream & fetch
+        run: |
+          set -eux
+          git remote add upstream "https://github.com/redmine/redmine.git" || true
+          git fetch upstream master --prune
+
+      - name: Fast-forward merge
+        run: |
+          set -eux
+          git checkout master
+          git merge --ff-only upstream/master
+
+      - name: Push
+        env:
+          MIRROR_PAT: ${{ secrets.MIRROR_PAT }}
+        run: |
+          set -eux
+          git remote set-url origin "https://${MIRROR_PAT}@github.com/${{ github.repository }}.git"
+          git push origin master
