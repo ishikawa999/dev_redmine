@@ -20,6 +20,7 @@ jobs:
         with:
           ref: ${{ env.TARGET_BRANCH }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Add remotes & fetch
         run: |
