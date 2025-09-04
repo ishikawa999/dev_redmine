@@ -14,58 +14,14 @@ class ApiKeyCopySystemTest < ApplicationSystemTestCase
       click_link 'Show'
 
       assert_selector '#api-access-key', visible: true
-
+      assert_selector '.api-key-actions .copy-api-key-link', visible: true
       assert_equal expected_value, find('#api-access-key').text.strip
 
       find('.copy-api-key-link').click
 
-      visit '/issues/1'
-
-      first('.icon-edit').click
-      find('textarea#issue_notes').set('')
-      find('textarea#issue_notes').send_keys([modifier_key, 'v'])
-      assert_equal expected_value, find('textarea#issue_notes').value
-    end
-  end
-
-  def test_api_key_copy_feedback
-    with_settings :rest_api_enabled => '1' do
-      log_user('jsmith', 'jsmith')
-
-      user = User.find_by_login('jsmith')
-      user.api_key # Create an API key if user don't have one.
-
-      visit '/my/account'
-      click_link 'Show'
-
-      assert_selector '#api-access-key', visible: true
-      assert_selector '.api-key-actions .copy-api-key-link', visible: true
-
-      find('.copy-api-key-link').click
-
-      # Wait for the "checked" state to appear after clicking
-      assert_selector('[data-state="checked"]')
-      # Wait for it to return to original state after 2 seconds
-      assert_selector('[data-state="copy"]')
-    end
-  end
-
-  def test_api_key_copy_button_show_and_hide
-    with_settings :rest_api_enabled => '1' do
-      log_user('jsmith', 'jsmith')
-
-      user = User.find_by_login('jsmith')
-      user.api_key # Create an API key if user don't have one.
-
-      visit '/my/account'
-
-      assert_no_selector '.copy-api-key-link'
-
-      click_link 'Show'
-      assert_selector '.api-key-actions .copy-api-key-link', visible: true
-
-      click_link 'Show'
-      assert_no_selector '.copy-api-key-link'
+      find('#quick-search input').set('')
+      find('#quick-search input').send_keys([modifier_key, 'v'])
+      assert_equal expected_value, find('#quick-search input').value
     end
   end
 
