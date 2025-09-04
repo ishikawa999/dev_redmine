@@ -43,9 +43,10 @@ class ApiKeyCopySystemTest < ApplicationSystemTestCase
 
       find('.copy-api-key-link').click
 
-      assert_selector '.copy-api-key-link', visible: true
-      sleep 2.1
-      assert_selector '.copy-api-key-link', visible: true
+      # Wait for the "checked" state to appear after clicking
+      assert_selector('[data-state="checked"]')
+      # Wait for it to return to original state after 2 seconds
+      assert_selector('[data-state="copy"]')
     end
   end
 
