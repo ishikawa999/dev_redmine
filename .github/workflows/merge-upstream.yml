@@ -10,17 +10,26 @@ jobs:
   merge_upstream:
     runs-on: ubuntu-latest
     steps:
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: master
           fetch-depth: 0
-          persist-credentials: false
+          persist-credentials: true
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Set up Git author
         run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name  "your-app[bot]"
+          git config user.email "your-app[bot]@users.noreply.github.com"
 
       - name: Add upstream & fetch
         run: |
@@ -35,9 +44,6 @@ jobs:
           git merge upstream/master
 
       - name: Push
-        env:
-          MIRROR_PAT: ${{ secrets.MIRROR_PAT }}
         run: |
           set -eux
-          git remote set-url origin "https://${MIRROR_PAT}@github.com/${{ github.repository }}.git"
-          git push origin master
+          git push origin HEAD:master
