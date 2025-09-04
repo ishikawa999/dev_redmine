@@ -1,5 +1,5 @@
-# .github/workflows/ff-merge-upstream.yml
-name: fastforward merge upstream
+# .github/workflows/merge-upstream.yml
+name: merge upstream
 
 on:
   workflow_dispatch:
@@ -13,9 +13,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.TARGET_BRANCH }}
+          ref: master
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Set up Git author
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Add upstream & fetch
         run: |
@@ -23,11 +28,11 @@ jobs:
           git remote add upstream "https://github.com/redmine/redmine.git" || true
           git fetch upstream master --prune
 
-      - name: Fast-forward merge
+      - name: Merge upstream/master into master
         run: |
           set -eux
           git checkout master
-          git merge --ff-only upstream/master
+          git merge upstream/master
 
       - name: Push
         env:
